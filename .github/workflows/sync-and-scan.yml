@@ -1,0 +1,37 @@
+name: Sync upstream → development + Semgrep scan
+
+on:
+  # every night at 2 AM UTC (10 PM EDT)
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-and-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: development
+
+      - name: Configure upstream remote
+        run: |
+          git remote remove upstream || true
+          git remote add upstream https://github.com/Christin-paige/codeSphere.git
+          git fetch upstream development
+
+      - name: Merge upstream/development → development
+        run: git merge upstream/development --no-edit
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: .semgrep.yml
+
+      - name: Push merged changes
+        if: ${{ success() }}
+        run: git push origin development
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
