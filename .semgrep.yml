@@ -1,0 +1,2 @@
+rules:
+  - security/semgrep/cookie-samesite.yaml
