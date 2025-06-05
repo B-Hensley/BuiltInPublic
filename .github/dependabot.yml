@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # Check npm deps in the repo root every week
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "02:00"            # 2 AM UTC = 10 PM EDT
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "react"
+        versions:
+          - "18.x"
+  # Check GitHub Actions workflow versions monthly
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
