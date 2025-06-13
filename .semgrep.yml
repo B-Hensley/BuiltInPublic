@@ -1,2 +1,4 @@
-rules:
-  - security/semgrep/cookie-samesite.yaml
+imports:
+  - p/default
+  - p/javascript
+  - p/typescript
