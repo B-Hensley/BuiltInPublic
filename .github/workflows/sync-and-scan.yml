@@ -1,9 +1,8 @@
 name: Sync upstream → development + Semgrep scan
 
 on:
-  # every night at 2 AM UTC (10 PM EDT)
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '0 2 * * *'  # every night at 2 AM UTC
   workflow_dispatch:
 
 jobs:
@@ -16,27 +15,28 @@ jobs:
           fetch-depth: 0
           ref: development
 
-      - name: Configure Git identity
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-
       - name: Configure upstream remote
         run: |
           git remote remove upstream || true
           git remote add upstream https://github.com/Christin-paige/codeSphere.git
           git fetch upstream development
 
-      - name: Merge upstream/development → development
-        run: git merge upstream/development --no-edit
+      - name: Merge upstream/development → development with conflict resolution
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          git merge -X theirs upstream/development || {
+            echo "Merge conflict detected. Attempting manual resolution..."
+
+            # Accept upstream version of dependabot.yml
+            git checkout --theirs .github/dependabot.yml
+            git add .github/dependabot.yml
+
+            # Commit the resolved merge
+            git commit -m "Resolved conflict: prefer upstream .github/dependabot.yml"
+          }
 
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
-          config: .semgrep.yml
-
-      - name: Push merged changes
-        if: ${{ success() }}
-        run: git push origin development
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
