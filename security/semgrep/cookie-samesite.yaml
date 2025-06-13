@@ -11,35 +11,31 @@ rules:
     metadata:
       category: security
       technology: koa
+    pattern-either:
+      # Option A: object literal with sameSite: "None"
+      - pattern: |
+          { $$_key: $$_value, ..., sameSite: "None", ... }
+      - pattern: |
+          { $$_key: $$_value, ..., sameSite: 'None', ... }
 
-    # Option A: match any object literal that includes `sameSite: "None"` (or 'None')
-    patterns:
-      - pattern-either:
-          - pattern: |
-              { $$_key: $$_value, ..., sameSite: "None", ... }
-          - pattern: |
-              { $$_key: $$_value, ..., sameSite: 'None', ... }
+      # Option B: ctx.cookies.set(...)
+      - pattern: |
+          ctx.cookies.set($COOKIENAME, $COOKIEVAL, { ..., sameSite: "None", ... })
+      - pattern: |
+          ctx.cookies.set($COOKIENAME, $COOKIEVAL, { ..., sameSite: 'None', ... })
 
-    # Option B: match ctx.cookies.set(...) calls with sameSite: "None" (or 'None')
-      - pattern-either:
-          - pattern: |
-              ctx.cookies.set($COOKIENAME, $COOKIEVAL, { ..., sameSite: "None", ... })
-          - pattern: |
-              ctx.cookies.set($COOKIENAME, $COOKIEVAL, { ..., sameSite: 'None', ... })
-
-    # Option C: match koa-session config objects with sameSite: "None" (or 'None')
-      - pattern-either:
-          - pattern: |
-              session({
-                key: $_key,
-                ..., 
-                sameSite: "None",
-                ...
-              }, $_app)
-          - pattern: |
-              session({
-                key: $_key,
-                ..., 
-                sameSite: 'None',
-                ...
-              }, $_app)
+      # Option C: koa-session config
+      - pattern: |
+          session({
+            key: $_key,
+            ..., 
+            sameSite: "None",
+            ...
+          }, $_app)
+      - pattern: |
+          session({
+            key: $_key,
+            ..., 
+            sameSite: 'None',
+            ...
+          }, $_app)
