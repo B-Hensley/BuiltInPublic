@@ -40,4 +40,8 @@ jobs:
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
-          config: p/default
+          config: >
+            p/default
+            p/owasp-top-ten
+            p/javascript
+            p/typescript       
