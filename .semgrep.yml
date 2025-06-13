@@ -1,4 +1,6 @@
-imports:
+configs:
   - p/default
   - p/javascript
   - p/typescript
+  - p/owasp-top-ten
+
