@@ -1,19 +1,17 @@
 version: 2
 updates:
-  # Check npm deps in the repo root every week
-  - package-ecosystem: npm
-    directory: "/"
+  - package-ecosystem: "npm"
+    directory: "/" # root of the project
     schedule:
       interval: "weekly"
-      day: "monday"
-      time: "02:00"            # 2 AM UTC = 10 PM EDT
     open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+    rebase-strategy: "auto"
     ignore:
-      - dependency-name: "react"
-        versions:
-          - "18.x"
-  # Check GitHub Actions workflow versions monthly
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "monthly"
+      - dependency-name: "eslint"
+        versions: ["<8.0.0"]
