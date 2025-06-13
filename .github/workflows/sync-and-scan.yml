@@ -2,7 +2,7 @@ name: Sync upstream → development + Semgrep scan
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # every night at 2 AM UTC
+    - cron: '0 2 * * *'  # Every night at 2 AM UTC
   workflow_dispatch:
 
 jobs:
@@ -37,11 +37,16 @@ jobs:
             git commit -m "Resolved conflict: prefer upstream .github/dependabot.yml"
           }
 
-      - name: Run Semgrep
+      - name: Run Semgrep (default + owasp-top-ten + custom)
         uses: returntocorp/semgrep-action@v1
         with:
           config: >
             p/default
             p/owasp-top-ten
-            p/javascript
-            p/typescript       
+            ./security/semgrep
+
+      - name: Push merged changes
+        if: ${{ success() }}
+        run: git push origin development
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
