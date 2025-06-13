@@ -40,4 +40,5 @@ jobs:
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
         with:
-          config: .semgrep.yml
+          config: >-
+            p/default
