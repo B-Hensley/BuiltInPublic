@@ -40,7 +40,7 @@ jobs:
       - name: Run Semgrep (default + owasp-top-ten + custom)
         uses: returntocorp/semgrep-action@v1
         with:
-          config: .semgrep.yml
+          config: p/default,p/owasp-top-ten,security/semgrep/general.yml
 
       - name: Push merged changes
         if: ${{ success() }}
