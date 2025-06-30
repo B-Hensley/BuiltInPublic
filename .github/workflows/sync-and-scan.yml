@@ -44,6 +44,7 @@ jobs:
 
       - name: 🔍 Native Semgrep scan
         run: |
+          semgrep scan \
            --config p/default \
             --config p/owasp-top-ten \
             --config security/semgrep/general.yml \
