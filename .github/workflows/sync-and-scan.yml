@@ -9,6 +9,12 @@ jobs:
   sync-and-scan:
     runs-on: ubuntu-latest
 
+    # ──────────────────────────────────────────────────────────
+    # Spin up the Semgrep container so that "semgrep" is in $PATH
+    # ──────────────────────────────────────────────────────────
+    container:
+      image: semgrep/semgrep:latest
+
     steps:
       - name: Checkout development
         uses: actions/checkout@v4
@@ -38,15 +44,14 @@ jobs:
             git commit -m "Resolved conflict: prefer upstream .github/dependabot.yml"
           }
 
-      - name: 🔍 Run Semgrep (default + owasp-top-ten + custom)
-        uses: returntocorp/semgrep-action@v2
-        with:
-          # ensure CLI ≥ 1.76.0 (we'll use 1.80.0 here)
-          semgrep_version: 1.80.0
-          # comma-separated list of rule paths or published rules
-          config: p/default,p/owasp-top-ten,security/semgrep/general.yml
-          # optionally ignore your seed file which contains bcrypt hashes
-          exclude: supabase/seed.sql
+      - name: 🔍 Native Semgrep scan
+        # Runs inside the semgrep/semgrep container
+        run: |
+          # --config can take comma-separated published rules + local YAML
+          semgrep scan \
+            --config p/default,p/owasp-top-ten,security/semgrep/general.yml \
+            --exclude supabase/seed.sql \
+            --error  # exit non-zero on blocking rules
 
       - name: Push merged changes
         if: ${{ success() }}
