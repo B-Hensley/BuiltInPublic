@@ -1,4 +1,4 @@
 rules:
-  - p/default            # Semgrep’s default rule set
-  - p/owasp-top-ten      # OWASP Top Ten checks
-  - security/semgrep/general.yml  # Your custom rules
+  - p/default # Semgrep’s default rule set
+  - p/owasp-top-ten # OWASP Top Ten checks
+  - security/semgrep/general.yml # Your custom rules
