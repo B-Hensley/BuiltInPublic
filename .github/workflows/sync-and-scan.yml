@@ -44,11 +44,13 @@ jobs:
 
       - name: 🔍 Native Semgrep scan
         run: |
-          semgrep scan \
-            --config p/default,p/owasp-top-ten,security/semgrep/general.yml \
+           --config p/default \
+            --config p/owasp-top-ten \
+            --config security/semgrep/general.yml \
             --exclude supabase/seed.sql \
+            --metrics=off \
             --error
-
+            
       - name: Push merged changes
         if: ${{ success() }}
         run: git push origin development
