@@ -8,10 +8,6 @@ on:
 jobs:
   sync-and-scan:
     runs-on: ubuntu-latest
-
-    # ──────────────────────────────────────────────────────────
-    # Spin up the Semgrep container so that "semgrep" is in $PATH
-    # ──────────────────────────────────────────────────────────
     container:
       image: semgrep/semgrep:latest
 
@@ -21,6 +17,9 @@ jobs:
         with:
           fetch-depth: 0
           ref: development
+
+      - name: Mark workspace safe for git
+        run: git config --global --add safe.directory "${{ github.workspace }}"
 
       - name: Configure upstream remote
         run: |
@@ -45,13 +44,11 @@ jobs:
           }
 
       - name: 🔍 Native Semgrep scan
-        # Runs inside the semgrep/semgrep container
         run: |
-          # --config can take comma-separated published rules + local YAML
           semgrep scan \
             --config p/default,p/owasp-top-ten,security/semgrep/general.yml \
             --exclude supabase/seed.sql \
-            --error  # exit non-zero on blocking rules
+            --error
 
       - name: Push merged changes
         if: ${{ success() }}
