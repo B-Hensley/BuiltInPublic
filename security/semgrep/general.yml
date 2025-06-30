@@ -1,5 +1,5 @@
 ---
-rules: 
+rules:
   - id: koa-insecure-samesite
     message: |
       Insecure SameSite setting detected (value "None").
