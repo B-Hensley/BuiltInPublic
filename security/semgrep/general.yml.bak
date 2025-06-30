@@ -2,8 +2,8 @@ rules:
   - id: koa-insecure-samesite
     message: |
       Insecure SameSite setting detected (value "None"). 
-      Cookies with `SameSite: "None"` are sent in third party contexts and can open you to CSRF. 
-      -- Change to `sameSite: "Lax"` (minimum) or `"Strict"` if possible.
+      Cookies with `SameSite: "None"` are sent in third‐party contexts and can open you to CSRF. 
+      Change to `sameSite: "Lax"` (minimum) or `"Strict"` if possible.
     severity: WARNING
     languages:
       - javascript
@@ -42,8 +42,8 @@ rules:
 
 
   - id: react-dangerously-set-inner-html
-    pattern: <div dangerouslySetInnerHTML={{ __html $HTML }} />
-    message: "-- Using dangerouslySetInnerHTML can lead to XSS. Avoid or sanitize input."
+    pattern: <div dangerouslySetInnerHTML={{ __html: $HTML }} />
+    message: "⚠️ Using dangerouslySetInnerHTML can lead to XSS. Avoid or sanitize input."
     severity: WARNING
     languages:
       - javascript
@@ -53,4 +53,3 @@ rules:
       technology: react
         - react
         - nextjs
-
