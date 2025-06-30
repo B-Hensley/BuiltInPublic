@@ -8,6 +8,8 @@ on:
 jobs:
   sync-and-scan:
     runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:latest
 
     steps:
       - name: Checkout development
@@ -16,6 +18,8 @@ jobs:
           fetch-depth: 0
           ref: development
 
+      - name: Mark all workspaces safe for git
+        run: git config --global --add safe.directory '*'
       - name: Configure upstream remote
         run: |
           git remote remove upstream || true
@@ -38,16 +42,16 @@ jobs:
             git commit -m "Resolved conflict: prefer upstream .github/dependabot.yml"
           }
 
-      - name: 🔍 Run Semgrep (default + owasp-top-ten + custom)
-        uses: returntocorp/semgrep-action@v2
-        with:
-          # ensure CLI ≥ 1.76.0 (we'll use 1.80.0 here)
-          semgrep_version: 1.80.0
-          # comma-separated list of rule paths or published rules
-          config: p/default,p/owasp-top-ten,security/semgrep/general.yml
-          # optionally ignore your seed file which contains bcrypt hashes
-          exclude: supabase/seed.sql
-
+      - name: 🔍 Native Semgrep scan
+        run: |
+          semgrep scan \
+           --config p/default \
+            --config p/owasp-top-ten \
+            --config security/semgrep/general.yml \
+            --exclude supabase/seed.sql \
+            --metrics=off \
+            --error
+            
       - name: Push merged changes
         if: ${{ success() }}
         run: git push origin development
