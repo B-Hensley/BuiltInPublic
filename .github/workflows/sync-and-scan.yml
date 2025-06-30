@@ -18,9 +18,8 @@ jobs:
           fetch-depth: 0
           ref: development
 
-      - name: Mark workspace safe for git
-        run: git config --global --add safe.directory "${{ github.workspace }}"
-
+      - name: Mark all workspaces safe for git
+        run: git config --global --add safe.directory '*'
       - name: Configure upstream remote
         run: |
           git remote remove upstream || true
