@@ -1,8 +1,8 @@
 rules:
   - id: koa-insecure-samesite
     message: |
-      Insecure SameSite setting detected (value "None"). 
-      Cookies with `SameSite: "None"` are sent in third party contexts and can open you to CSRF. 
+      Insecure SameSite setting detected (value "None").
+      Cookies with `SameSite: "None"` are sent in third party contexts and can open you to CSRF.
       -- Change to `sameSite: "Lax"` (minimum) or `"Strict"` if possible.
     severity: WARNING
     languages:
@@ -10,7 +10,8 @@ rules:
       - typescript
     metadata:
       category: security
-      technology: koa
+      technology:
+        - koa
     pattern-either:
       # Option A: object literal with sameSite: "None"
       - pattern: |
@@ -50,7 +51,6 @@ rules:
       - typescript
     metadata:
       category: security
-      technology: react
+      technology:
         - react
         - nextjs
-
