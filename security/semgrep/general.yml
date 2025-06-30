@@ -42,7 +42,7 @@ rules:
 
 
   - id: react-dangerously-set-inner-html
-    pattern: <div dangerouslySetInnerHTML={{ __html $HTML }} />
+    pattern: <div dangerouslySetInnerHTML={{ __html: $HTML }} />
     message: "-- Using dangerouslySetInnerHTML can lead to XSS. Avoid or sanitize input."
     severity: WARNING
     languages:
@@ -50,7 +50,7 @@ rules:
       - typescript
     metadata:
       category: security
-      technology: react
+      technology:
         - react
         - nextjs
 
