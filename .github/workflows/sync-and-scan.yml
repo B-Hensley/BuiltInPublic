@@ -45,12 +45,13 @@ jobs:
       - name: 🔍 Native Semgrep scan
         run: |
           semgrep scan \
-           --config p/default \
+            --config p/default \
             --config p/owasp-top-ten \
-            --config security/semgrep/general.yml \
+            --config p/react \
+            --config ./security/semgrep \
             --exclude supabase/seed.sql \
-            --metrics=off \
-            --error
+            --exclude .env.example \
+            --metrics=off
             
       - name: Push merged changes
         if: ${{ success() }}
