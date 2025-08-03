@@ -1,30 +1,32 @@
-import { NextResponse } from "next/server";
-// The client you created from the Server-Side Auth instructions
-import { createAnonClient } from "../../../../utils/supabase/server";
-import { isSafeNextPath } from "@/lib/utils";
+import { NextResponse } from 'next/server';
+import { createAnonClient } from '../../../../utils/supabase/server';
+import { isSafeNextPath } from '@/lib/utils';
+import { ProfileRepository } from '@/repositories/profileRepository/profile.repository';
+import { redirect } from 'next/navigation';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
+  const code = searchParams.get('code');
 
-  const rawNext = searchParams.get("next") ?? "/";
-  const next = isSafeNextPath(rawNext) ? rawNext : "/";
+  const rawNext = searchParams.get('next') ?? '/';
+  const next = isSafeNextPath(rawNext) ? rawNext : '/';
+
   if (code) {
     const supabase = await createAnonClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
-      const isLocalEnv = process.env.NODE_ENV === "development";
-      if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-        return NextResponse.redirect(`${origin}${next}`);
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`);
+      const profileRepository = new ProfileRepository(supabase);
+
+      const userProfile = await profileRepository.getById(data.user.id);
+
+      if (userProfile?.username) {
+        return redirect(`/${userProfile.username}`);
       } else {
-        return NextResponse.redirect(`${origin}${next}`);
+        return NextResponse.redirect('/dashboard');
       }
     }
   }
-  // return the user to an error page with instructions
+
+  // Fallback to error page
   return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }

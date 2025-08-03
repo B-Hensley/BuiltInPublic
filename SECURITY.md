@@ -13,7 +13,7 @@ If you’ve discovered a vulnerability or something that doesn’t look quite ri
 **Please don’t open a public issue.**  
 Instead, reach out to us at:
 
-📧 **christinpmartin@gmail.com**
+📧 **builtinpublic1@gmail.com**
 
 When reporting, include as much detail as you can:
 
@@ -46,7 +46,7 @@ We’re all about community here. If you want to be credited, we’re happy to h
 
 ## 🔐 Secure Contributions
 
-Helping us build BuiltInPublic? Amazing. Please take a look at our [CONTRIBUTORS.md](./CONTRIBUTORS.md#secure-coding-practices) to see our secure coding expectations.
+Helping us build BuiltInPublic? Amazing. Please take a look at our [Secure Coding Practices Wiki](https://github.com/Christin-paige/BuiltInPublic/wiki/Secure-Coding-Practices) to see our secure coding expectations.
 
 You don’t have to be a security expert, just keeping an eye out for common pitfalls helps a lot.
 
@@ -54,7 +54,7 @@ You don’t have to be a security expert, just keeping an eye out for common pit
 
 ## 🧭 Supported Versions
 
-We currently support the latest version of the `main` branch. Security fixes will be released for that version unless otherwise noted.
+We currently support the latest version of the `development` branch. Security fixes will be released for that version unless otherwise noted.
 
 ---
 

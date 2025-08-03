@@ -1,36 +1,38 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from 'next/server';
+import { createAnonClient } from './server';
 
-const protectedRoutes = ["/dashboard", "/profile"];
-const publicRoutes = ["/auth"];
+const protectedRoutes = ['/dashboard', '/profile', '/onboarding'];
+const publicRoutes = ['/auth'];
 
 export async function updateSession(request: NextRequest) {
+  const isStaging = process.env.NEXT_PUBLIC_STAGING === 'true';
+  const isStagingAuthPage = request.nextUrl.pathname === '/staging-auth';
+
+  if (!isStaging && isStagingAuthPage) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  if (isStaging) {
+    const stagingAuth = request.cookies.get('staging-auth');
+
+    if (!stagingAuth?.value && !isStagingAuthPage) {
+      return NextResponse.redirect(new URL('/staging-auth', request.url));
+    }
+
+    if (stagingAuth?.value && isStagingAuthPage) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    if (isStagingAuthPage) {
+      return NextResponse.next();
+    }
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value),
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
-          );
-        },
-      },
-    },
-  );
+  const supabase = await createAnonClient();
 
   // Do not run code between createServerClient and
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
@@ -45,21 +47,21 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   const isProtectedRoute = protectedRoutes.some(
-    (route) => path === route || path.startsWith(route),
+    (route) => path === route || path.startsWith(route)
   );
 
   const isPublicRoute = publicRoutes.some(
-    (route) => path === route || path.startsWith(route),
+    (route) => path === route || path.startsWith(route)
   );
 
   if (isProtectedRoute && !user) {
-    const redirectUrl = new URL("/auth", request.url);
+    const redirectUrl = new URL('/auth', request.url);
 
     return NextResponse.redirect(redirectUrl);
   }
 
   if (isPublicRoute && user) {
-    const redirectUrl = new URL("/dashboard", request.url);
+    const redirectUrl = new URL('/dashboard', request.url);
 
     return NextResponse.redirect(redirectUrl);
   }

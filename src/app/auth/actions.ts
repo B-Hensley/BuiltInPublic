@@ -1,18 +1,25 @@
-import supabaseClient from "../../../utils/supabase/client";
+'use server';
 
-export async function LoginWithEmail(email: string, password: string) {
+import { ProfileRepository } from '@/repositories/profileRepository/profile.repository';
+import { redirect } from 'next/navigation';
+import { createAnonClient } from 'utils/supabase/server';
+
+export async function loginWithEmail(email: string, password: string) {
   // Logic to login with email and password
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
+  const supabase = await createAnonClient();
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
-  // If there is an error, throw it
+  // If there is an error, return error object
   if (error) {
-    console.log("Email login failed", error.message);
-    throw error;
+    return { message: 'Invalid credentials', status: 401 };
   }
 
-  // If there is no error, return the user data
-  return data.user;
+  const profileRepository = new ProfileRepository(supabase);
+
+  const userProfile = await profileRepository.getById(data.user.id);
+
+  return redirect(`/${userProfile?.username}`);
 }

@@ -1,0 +1,33 @@
+// scripts/generateSupabaseTypes.ts
+import { supabase } from '../seed';
+import { exec } from 'child_process';
+import { writeFile } from 'fs';
+import { promisify } from 'util';
+import path from 'path';
+
+const execAsync = promisify(exec);
+const writeFileAsync = promisify(writeFile);
+
+async function generateSupabaseTypes() {
+  try {
+    console.log('🌀 Generating Supabase types...');
+
+    const { stdout, stderr } = await execAsync(
+      'supabase gen types typescript --local'
+    );
+
+    if (stderr) {
+      console.error('⚠️ STDERR:', stderr);
+    }
+
+    const outputPath = path.resolve(__dirname, '../supabase/supabase.types.ts');
+    await writeFileAsync(outputPath, stdout);
+
+    console.log(`✅ Supabase types saved to: ${outputPath}`);
+  } catch (error) {
+    console.error('❌ Failed to generate Supabase types:', error);
+    process.exit(1);
+  }
+}
+
+generateSupabaseTypes();

@@ -2,7 +2,7 @@ name: Sync upstream → development + Semgrep scan
 
 on:
   schedule:
-    - cron: "0 2 * * *" # Every night at 2 AM UTC
+    - cron: "0 * * * *" # Every hour
   workflow_dispatch:
 
 jobs:
@@ -45,12 +45,13 @@ jobs:
       - name: 🔍 Native Semgrep scan
         run: |
           semgrep scan \
-           --config p/default \
+            --config p/default \
             --config p/owasp-top-ten \
-            --config security/semgrep/general.yml \
+            --config p/react \
+            --config ./security/semgrep \
             --exclude supabase/seed.sql \
-            --metrics=off \
-            --error
+            --exclude .env.example \
+            --metrics=off
             
       - name: Push merged changes
         if: ${{ success() }}

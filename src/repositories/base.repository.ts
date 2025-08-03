@@ -1,5 +1,6 @@
-import { PostgrestFilterBuilder } from "@supabase/postgrest-js";
-import { AnySupabaseClient } from "../../utils/supabase/server";
+import { PostgrestFilterBuilder } from '@supabase/postgrest-js';
+import { AnySupabaseClient } from '../../utils/supabase/server';
+import { GenericSchema } from '@supabase/postgrest-js/dist/cjs/types';
 
 export interface GetRepositoryOptions {
   filters?: Record<string, any>;
@@ -12,6 +13,8 @@ export interface GetRepositoryOptions {
   count?: boolean;
 }
 
+export type FilterBuilder = PostgrestFilterBuilder<any, any, any, any>;
+
 export abstract class BaseRepository<
   TDto,
   TEntity,
@@ -23,34 +26,52 @@ export abstract class BaseRepository<
     this.supabase = supabase;
   }
 
-  abstract getBaseQuery(count: boolean): PostgrestFilterBuilder<any, any, any>;
+  abstract getRawBaseQuery(count: boolean): any;
 
   abstract transformDTO(row: TDto): TEntity;
 
-  applyPagination<T extends PostgrestFilterBuilder<any, any, any>>(
+  getBaseQuery(count?: boolean): FilterBuilder {
+    return this.getRawBaseQuery((count = false)) as FilterBuilder;
+  }
+
+  validateDTO(data: any): boolean {
+    return data satisfies TDto;
+  }
+
+  protected safeTransformDTO(data: any): TEntity {
+    const isValid = this.validateDTO(data);
+
+    if (!isValid) {
+      throw new Error('Invalid DTO');
+    }
+
+    return this.transformDTO(data);
+  }
+
+  applyPagination<T extends FilterBuilder>(
     query: T,
     page: number = 1,
-    limit: number = 10,
+    limit: number = 10
   ): T {
     const offset = (page - 1) * limit;
     return query.range(offset, offset + limit - 1) as T;
   }
 
-  applyFilters<T extends PostgrestFilterBuilder<any, any, any>>(
+  applyFilters<T extends FilterBuilder>(
     query: T,
-    filters: Record<string, any>,
+    filters: Record<string, any>
   ): T {
     let enhancedQuery = query;
 
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
-        if (typeof value === "string" && value.includes("%")) {
+        if (typeof value === 'string' && value.includes('%')) {
           // Handle LIKE queries
           enhancedQuery = enhancedQuery.like(key, value) as T;
         } else if (Array.isArray(value)) {
           // Handle IN queries
           enhancedQuery = enhancedQuery.in(key, value) as T;
-        } else if (value.startsWith("!")) {
+        } else if (value.startsWith('!')) {
           const cleanedValue = value.slice(1);
           enhancedQuery = enhancedQuery.neq(key, cleanedValue);
         } else {
@@ -63,24 +84,24 @@ export abstract class BaseRepository<
     return enhancedQuery;
   }
 
-  applyOrdering<T extends PostgrestFilterBuilder<any, any, any>>(
+  applyOrdering<T extends FilterBuilder>(
     query: T,
     orderBy: string,
-    ascending: boolean = true,
+    ascending: boolean = true
   ): T {
     return query.order(orderBy, { ascending }) as T;
   }
 
-  applySearch<T extends PostgrestFilterBuilder<any, any, any>>(
+  applySearch<T extends FilterBuilder>(
     query: T,
     searchTerm: string,
-    column: string,
+    column: string
   ): T {
     if (!searchTerm.trim()) return query;
 
     // Create a text search
     let foreignTable, col;
-    const columnArr = column.split(".");
+    const columnArr = column.split('.');
     if (columnArr.length > 1) {
       foreignTable = columnArr[0];
       col = columnArr[1];
