@@ -1,0 +1,60 @@
+name: Sync upstream → development + Semgrep scan
+
+on:
+  schedule:
+    - cron: "0 * * * *" # Every hour
+  workflow_dispatch:
+
+jobs:
+  sync-and-scan:
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep:latest
+
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: development
+
+      - name: Mark all workspaces safe for git
+        run: git config --global --add safe.directory '*'
+      - name: Configure upstream remote
+        run: |
+          git remote remove upstream || true
+          git remote add upstream https://github.com/Christin-paige/codeSphere.git
+          git fetch upstream development
+
+      - name: Merge upstream/development → development with conflict resolution
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          git merge -X theirs upstream/development || {
+            echo "Merge conflict detected. Attempting manual resolution..."
+
+            # Accept upstream version of dependabot.yml
+            git checkout --theirs .github/dependabot.yml
+            git add .github/dependabot.yml
+
+            # Commit the resolved merge
+            git commit -m "Resolved conflict: prefer upstream .github/dependabot.yml"
+          }
+
+      - name: 🔍 Native Semgrep scan
+        run: |
+          semgrep scan \
+            --config p/default \
+            --config p/owasp-top-ten \
+            --config p/react \
+            --config ./security/semgrep \
+            --exclude supabase/seed.sql \
+            --exclude .env.example \
+            --metrics=off
+            
+      - name: Push merged changes
+        if: ${{ success() }}
+        run: git push origin development
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
